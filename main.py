@@ -8,18 +8,8 @@ from time import sleep
 # 다른 파일에서 필요한 함수들을 가져옵니다.
 from collect_api import get_all_markets, fetch_hour_candles
 from db_handler import save_to_supabase
-# main.py
 
-import logging
-import os
-import pandas as pd
-from time import sleep
-
-# 다른 파일에서 필요한 함수들을 가져옵니다.
-from collect_api import get_all_markets, fetch_hour_candles
-from db_handler import save_to_supabase
-
-# --- 로거(Logger) 설정 ---
+# 로거(Logger) 설정
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
