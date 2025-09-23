@@ -43,24 +43,47 @@ def save_to_supabase(df: pd.DataFrame, exchange_name: str):
         logger.error(f"[Supabase] Upsert 실패: {e}", exc_info=True)
 
 def fetch_hourly_volume(hours=24):
-    """최근 N시간 동안의 거래량 데이터를 DB에서 가져옵니다."""
+    """
+    최근 N시간 동안의 모든 거래량 데이터를 DB에서 가져옵니다. (1000개 제한 및 페이지네이션 처리)
+    """
     try:
         supabase = get_supabase()
-
-        # 현재 시간에서 hours 만큼 이전 시간 계산
         from datetime import datetime, timedelta, timezone
-        time_threshold = datetime.now(timezone.utc) - timedelta(hours=hours)
+        
+        KST = timezone(timedelta(hours=9))
+        now_kst = datetime.now(KST)
+        time_threshold = now_kst - timedelta(hours=hours)
 
-        # Supabase에서 데이터 조회
-        res = supabase.table("hourly_volume") \
-                    .select("exchange, market, datetime_kst, traded_price") \
-                    .gte("datetime_kst", time_threshold.isoformat()) \
-                    .execute()
+        all_data = []
+        current_page = 0
+        page_size = 1000  # Supabase의 기본 최대 한도
 
-        df = pd.DataFrame(res.data)
-        logger.info(f"[Supabase] {len(df)}개의 데이터를 성공적으로 조회했습니다.")
+        while True:
+            # 1. 페이지별로 데이터 조회 범위 설정
+            start_index = current_page * page_size
+            end_index = start_index + page_size - 1
+
+            res = supabase.table("hourly_volume") \
+                        .select("exchange, market, datetime_kst, traded_price", count='exact') \
+                        .gte("datetime_kst", time_threshold.isoformat()) \
+                        .range(start_index, end_index) \
+                        .execute()
+            
+            # 2. 조회된 데이터를 리스트에 추가
+            fetched_data = res.data
+            if fetched_data:
+                all_data.extend(fetched_data)
+            
+            # 3. 더 이상 가져올 데이터가 없으면 반복문 종료
+            if len(fetched_data) < page_size:
+                break
+            
+            current_page += 1
+
+        df = pd.DataFrame(all_data)
+        logger.info(f"[Supabase] 총 {len(df)}개({current_page + 1} 페이지)의 데이터를 성공적으로 조회했습니다.")
         return df
 
     except Exception as e:
         logger.error(f"[Supabase] 데이터 조회 실패: {e}", exc_info=True)
-        return pd.DataFrame() # 실패 시 빈 데이터프레임 반환
+        return pd.DataFrame()
