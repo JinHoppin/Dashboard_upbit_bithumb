@@ -39,7 +39,7 @@ def get_all_markets(exchange, only_krw=True):
 def fetch_hour_candles(exchange, market):
     Base_url = base_url_select(exchange)
     url = f"{Base_url}/v1/candles/minutes/60"
-    params = {"market": market, "count": 1}
+    params = {"market": market, "count": 2}
     r = requests.get(url, headers=HEADERS, params=params, timeout=20)
     r.raise_for_status()
     return r.json()
