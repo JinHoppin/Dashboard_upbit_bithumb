@@ -3,3 +3,8 @@
 
 Upbit와 Bithumb의 API를 이용해서 한시간 단위 데이터를 실시간으로 수집해서 supabase에 저장하고, 해당 저장된 데이터를 기반으로 시각화해서 보여주는 프로젝트.
 Render service를 이용해서 제작예정. 추후에 보다 확장을 해야하면 AWS서비스를 이용할 예정.
+
+## 2025.9.23
+1.0.1 ver dashboard 완료 부분을 업로드
+
+Streamlit으로 제작한 dashboard를 deploy하기 위해 진행
