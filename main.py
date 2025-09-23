@@ -40,12 +40,12 @@ def run_collection_process(exchange, only_krw=True):
             if not data or not isinstance(data, list):
                 logger.warning(f"'{mkt}' 데이터가 없거나 형식이 올바르지 않음: {data}")
                 continue
-            
-            rows_out.append({
-                "market": mkt,
-                "datetime_kst": data[0]["candle_date_time_kst"],
-                "traded_price": data[0]["candle_acc_trade_price"]
-            })
+            for n in range(len(data)):
+                rows_out.append({
+                    "market": mkt,
+                    "datetime_kst": data[n]["candle_date_time_kst"],
+                    "traded_price": data[n]["candle_acc_trade_price"]
+                })
         except Exception as e:
             logger.error(f"'{mkt}' 페어 캔들 수집 실패: {e}")
         
